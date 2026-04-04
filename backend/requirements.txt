@@ -8,3 +8,6 @@ flask-cors==4.0.1
 Pillow==10.1.0
 python-dotenv==1.0.0
 werkzeug==3.0.1
+
+
+#http://localhost:8000/# This is the URL for the local development server. You can access your Flask application by navigating to this URL in your web browser. Make sure your Flask app is running on port 8000 for this to work.
