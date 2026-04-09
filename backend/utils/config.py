@@ -1,26 +1,24 @@
 import os
 from pathlib import Path
 
-# Base paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 MODEL_PATH = BASE_DIR / 'model' / 'pneumonia_model.h5'
+INSTANCE_PATH = BASE_DIR / 'instance'
 
-# Model parameters (matching your Colab notebook)
-IMG_SIZE = (150, 150)  # Your model uses 150x150
-IMG_CHANNELS = 1        # Grayscale
-IMG_SHAPE = (150, 150, 1)
+# Create instance directory if it doesn't exist
+INSTANCE_PATH.mkdir(exist_ok=True)
 
-# Class mapping
-# Your model: 0 = Pneumonia, 1 = Normal
-CLASS_NAMES = {
-    0: 'Pneumonia',
-    1: 'Normal'
-}
+# Database - Use absolute path with proper Windows format
+db_path = os.path.abspath(str(INSTANCE_PATH / 'pneumonia.db'))
+SQLALCHEMY_DATABASE_URI = f'sqlite:///{db_path}'
+SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-# Prediction threshold
-THRESHOLD = 0.5
+# Model parameters
+IMG_SIZE = (150, 150)
+IMG_CHANNELS = 1
 
 # API settings
 DEBUG = True
 PORT = 5000
 HOST = '0.0.0.0'
+SECRET_KEY = 'your-secret-key-change-in-production'

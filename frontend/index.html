@@ -32,8 +32,8 @@
                 <a href="#" class="nav-item">Support</a>
             </div>
             <div class="auth-actions">
-                <button class="auth-btn login-btn" id="loginBtn">Sign In</button>
-                <button class="auth-btn signup-btn" id="signupBtn">Get Started</button>
+                <button class="auth-btn login-btn" onclick="window.location.href='login.html'">Sign In</button>
+                <button class="auth-btn signup-btn" onclick="window.location.href='login.html'">Get Started</button>
             </div>
         </div>
     </nav>
@@ -56,7 +56,7 @@
                     Trusted by radiologists worldwide.
                 </p>
                 <div class="hero-cta">
-                    <button class="cta-primary" id="getStartedBtn">
+                    <button class="cta-primary" onclick="window.location.href='login.html'">
                         Get Started
                         <i class="fas fa-arrow-right"></i>
                     </button>
@@ -119,203 +119,11 @@
         </div>
     </div>
 
-    <!-- Dashboard (Hidden until login) -->
-    <div class="dashboard-new" id="dashboard" style="display: none;">
-        <div class="dashboard-header-new">
-            <div class="user-greeting">
-                <div class="user-avatar-new" id="userAvatar"></div>
-                <div class="greeting-text">
-                    <span class="greeting">Welcome back,</span>
-                    <span class="username" id="usernameDisplay"></span>
-                </div>
-            </div>
-            <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i>
-                Sign Out
-            </button>
-        </div>
-
-        <div class="dashboard-grid">
-            <!-- Upload Zone - Completely Redesigned -->
-            <div class="upload-zone">
-                <div class="zone-header">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <h2>Upload Medical Image</h2>
-                    <p>Drag & drop or click to upload chest X-ray</p>
-                </div>
-                
-                <div class="drop-zone" id="dropZone">
-                    <div class="drop-content">
-                        <div class="drop-icon">
-                            <i class="fas fa-file-medical-alt"></i>
-                        </div>
-                        <h3>Drop your X-ray here</h3>
-                        <p>JPEG, PNG, DICOM supported • Max 16MB</p>
-                        <button class="select-file-btn" id="selectFileBtn">
-                            <i class="fas fa-folder-open"></i>
-                            Choose File
-                        </button>
-                        <input type="file" id="fileInputNew" accept="image/*" hidden>
-                    </div>
-                </div>
-
-                <div class="preview-zone" id="previewZone" style="display: none;">
-                    <div class="preview-card">
-                        <div class="preview-image-container">
-                            <img id="previewImageNew" alt="X-Ray Preview">
-                            <button class="remove-preview" id="removePreviewBtn">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div class="preview-details">
-                            <div class="detail-item">
-                                <i class="fas fa-file-image"></i>
-                                <span id="fileNameNew"></span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fas fa-database"></i>
-                                <span id="fileSizeNew"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="analyze-btn-new" id="analyzeBtnNew" disabled>
-                    <i class="fas fa-microscope"></i>
-                    Start Analysis
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </div>
-
-            <!-- Results Panel - Completely Redesigned -->
-            <div class="results-panel" id="resultsPanel" style="display: none;">
-                <div class="panel-header">
-                    <i class="fas fa-chart-bar"></i>
-                    <h2>Diagnostic Report</h2>
-                </div>
-                
-                <div class="diagnosis-card" id="diagnosisCard">
-                    <div class="diagnosis-icon" id="diagnosisIcon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="diagnosis-text">
-                        <span class="diagnosis-label">Diagnosis</span>
-                        <span class="diagnosis-value" id="diagnosisValue">Normal</span>
-                    </div>
-                </div>
-
-                <div class="confidence-meter-new">
-                    <div class="meter-header">
-                        <span>Confidence Score</span>
-                        <span class="score-value" id="scoreValue">0%</span>
-                    </div>
-                    <div class="meter-bar">
-                        <div class="meter-fill" id="meterFill"></div>
-                    </div>
-                </div>
-
-                <div class="metrics-panel">
-                    <div class="metric-new">
-                        <i class="fas fa-stopwatch"></i>
-                        <div>
-                            <span class="metric-label-new">Processing Time</span>
-                            <span class="metric-value-new" id="processTime">-</span>
-                        </div>
-                    </div>
-                    <div class="metric-new">
-                        <i class="fas fa-brain"></i>
-                        <div>
-                            <span class="metric-label-new">AI Model</span>
-                            <span class="metric-value-new">v3.0 - CNN</span>
-                        </div>
-                    </div>
-                    <div class="metric-new">
-                        <i class="fas fa-chart-simple"></i>
-                        <div>
-                            <span class="metric-label-new">Confidence Level</span>
-                            <span class="metric-value-new" id="confidenceLevelNew">High</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="disclaimer-new">
-                    <i class="fas fa-stethoscope"></i>
-                    <p>For medical professional use only. Always verify with clinical correlation.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modals -->
-    <div class="modal-new" id="loginModalNew">
-        <div class="modal-container">
-            <button class="modal-close" onclick="closeModalNew('loginModalNew')">&times;</button>
-            <div class="modal-icon">
-                <i class="fas fa-lungs"></i>
-            </div>
-            <h2>Welcome Back</h2>
-            <p class="modal-subtitle">Sign in to continue to your dashboard</p>
-            <form id="loginFormNew">
-                <div class="input-field">
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" placeholder="Email address" id="loginEmailNew" required>
-                </div>
-                <div class="input-field">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" placeholder="Password" id="loginPasswordNew" required>
-                </div>
-                <button type="submit" class="modal-submit">Sign In</button>
-                <p class="modal-footer">
-                    Don't have an account? 
-                    <a href="#" onclick="switchToSignupNew(); return false;">Create account</a>
-                </p>
-            </form>
-        </div>
-    </div>
-
-    <div class="modal-new" id="signupModalNew">
-        <div class="modal-container">
-            <button class="modal-close" onclick="closeModalNew('signupModalNew')">&times;</button>
-            <div class="modal-icon">
-                <i class="fas fa-user-plus"></i>
-            </div>
-            <h2>Create Account</h2>
-            <p class="modal-subtitle">Start your journey with AI-powered diagnosis</p>
-            <form id="signupFormNew">
-                <div class="input-field">
-                    <i class="fas fa-user"></i>
-                    <input type="text" placeholder="Full name" id="signupNameNew" required>
-                </div>
-                <div class="input-field">
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" placeholder="Email address" id="signupEmailNew" required>
-                </div>
-                <div class="input-field">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" placeholder="Password" id="signupPasswordNew" required>
-                </div>
-                <div class="input-field">
-                    <i class="fas fa-check-circle"></i>
-                    <input type="password" placeholder="Confirm password" id="confirmPasswordNew" required>
-                </div>
-                <button type="submit" class="modal-submit">Create Account</button>
-                <p class="modal-footer">
-                    Already have an account? 
-                    <a href="#" onclick="switchToLoginNew(); return false;">Sign in</a>
-                </p>
-            </form>
-        </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div class="loading-overlay-new" id="loadingOverlayNew" style="display: none;">
-        <div class="loading-spinner"></div>
-        <div class="loading-text-new">
-            <h3>Analyzing X-Ray</h3>
-            <p>Our AI is processing your image...</p>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
+    <script>
+        // Simple redirect for demo button
+        document.getElementById('demoBtn')?.addEventListener('click', function() {
+            alert('Demo video coming soon!');
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - PneumoDetect AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-blob-1 {
+            position: absolute;
+            top: 10%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255,255,255,0.2), transparent);
+            border-radius: 50%;
+            filter: blur(80px);
+            animation: floatBlob 15s ease-in-out infinite;
+        }
+
+        .bg-blob-2 {
+            position: absolute;
+            bottom: 10%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,255,255,0.15), transparent);
+            border-radius: 50%;
+            filter: blur(100px);
+            animation: floatBlob 20s ease-in-out infinite reverse;
+        }
+
+        @keyframes floatBlob {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, 50px) scale(1.1); }
+        }
+
+        /* Login Container */
+        .login-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Login Card - Reduced Padding */
+        .login-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 32px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header - Reduced Margin */
+        .login-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .logo-icon {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-icon i {
+            font-size: 28px;
+            color: white;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .login-header h1 span {
+            color: #ffd700;
+        }
+
+        .login-header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+        }
+
+        /* Input Groups */
+        .input-group {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Login Button */
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            margin-top: 8px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Footer */
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+        }
+
+        .login-footer a {
+            color: #ffd700;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 16px;
+            color: #f87171;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(20, 22, 36, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 32px;
+            width: 90%;
+            max-width: 450px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: white;
+            font-size: 22px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: white;
+        }
+
+        /* Form Row for Register */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 24px;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            .login-header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation">
+        <div class="bg-blob-1"></div>
+        <div class="bg-blob-2"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo-icon">
+                    <i class="fas fa-lungs"></i>
+                </div>
+                <h1>Pneumo<span>Detect</span></h1>
+                <p>Sign in to your account</p>
+            </div>
+            
+            <div id="errorDisplay" class="error-message" style="display: none;"></div>
+            
+            <form id="loginForm">
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" placeholder="Email address" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="login-btn">Sign In</button>
+            </form>
+            
+            <div class="login-footer">
+                <p>Don't have an account? <a href="#" onclick="showRegister()">Register here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create Account</h2>
+                <button class="close-modal" onclick="closeRegister()">&times;</button>
+            </div>
+            <form id="registerForm">
+                <div class="form-row">
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="firstName" placeholder="First Name" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="lastName" placeholder="Last Name" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="regEmail" placeholder="Email address" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-hospital"></i>
+                    <input type="text" id="hospitalName" placeholder="Hospital/Clinic Name">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="regPassword" placeholder="Password (min 6 characters)" required>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-check-circle"></i>
+                    <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+                </div>
+                <button type="submit" class="login-btn">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+        
+        async function testBackendConnection() {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                if (response.ok) {
+                    console.log('✅ Backend connected');
+                    document.getElementById('errorDisplay').style.display = 'none';
+                } else {
+                    throw new Error('Backend responded with error');
+                }
+            } catch (error) {
+                console.error('❌ Backend not reachable:', error);
+                document.getElementById('errorDisplay').style.display = 'block';
+                document.getElementById('errorDisplay').innerHTML = '⚠️ Cannot connect to backend. Make sure the server is running on port 5000.';
+            }
+        }
+        
+        testBackendConnection();
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('user', JSON.stringify(data));
+                    if (data.role === 'admin') {
+                        window.location.href = 'admin_dashboard.html';
+                    } else {
+                        window.location.href = 'doctor_dashboard.html';
+                    }
+                } else {
+                    document.getElementById('errorDisplay').style.display = 'block';
+                    document.getElementById('errorDisplay').innerHTML = data.error || 'Login failed';
+                    setTimeout(() => {
+                        document.getElementById('errorDisplay').style.display = 'none';
+                    }, 3000);
+                }
+            } catch (error) {
+                document.getElementById('errorDisplay').style.display = 'block';
+                document.getElementById('errorDisplay').innerHTML = 'Connection error. Make sure backend is running on port 5000';
+            }
+        });
+        
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirm) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            if (password.length < 6) {
+                alert('Password must be at least 6 characters');
+                return;
+            }
+            
+            const data = {
+                first_name: document.getElementById('firstName').value,
+                last_name: document.getElementById('lastName').value,
+                email: document.getElementById('regEmail').value,
+                password: password,
+                hospital_name: document.getElementById('hospitalName').value,
+                role: 'doctor'
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/api/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Registration successful! Please login.');
+                    closeRegister();
+                    document.getElementById('email').value = data.email;
+                } else {
+                    alert(result.error || 'Registration failed');
+                }
+            } catch (error) {
+                alert('Connection error. Make sure backend is running');
+            }
+        });
+        
+        function showRegister() {
+            document.getElementById('registerModal').style.display = 'flex';
+        }
+        
+        function closeRegister() {
+            document.getElementById('registerModal').style.display = 'none';
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('registerModal');
+            if (event.target === modal) closeRegister();
+        };
+    </script>
+</body>
+</html>

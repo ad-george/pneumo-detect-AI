@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - PneumoDetect AI</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-lungs"></i>
+                    <span>Pneumo<span>Detect</span></span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="patients">
+                    <i class="fas fa-users"></i>
+                    <span>Patients</span>
+                </a>
+                <a href="#" class="nav-item" data-page="new-analysis">
+                    <i class="fas fa-microscope"></i>
+                    <span>New Analysis</span>
+                </a>
+                <a href="#" class="nav-item" data-page="history">
+                    <i class="fas fa-history"></i>
+                    <span>History</span>
+                </a>
+                <a href="#" class="nav-item" data-page="reports">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">D</div>
+                    <div class="user-details">
+                        <span class="user-name" id="userName">Dr. Name</span>
+                        <span class="user-role">Doctor</span>
+                    </div>
+                </div>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="page active">
+                <div class="page-header">
+                    <h1>Doctor Dashboard</h1>
+                    <p>Welcome back, <span id="welcomeName">Doctor</span></p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalPatients">0</h3>
+                            <p>Total Patients</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalAnalyses">0</h3>
+                            <p>Total Analyses</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="pneumoniaCases">0</h3>
+                            <p>Pneumonia Cases</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="normalCases">0</h3>
+                            <p>Normal Cases</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-card">
+                        <h3>Analysis Distribution</h3>
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Recent Activity</h3>
+                        <div class="activity-list" id="activityList">
+                            <p>Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patients Page -->
+            <div id="patients-page" class="page">
+                <div class="page-header">
+                    <h1>Patients</h1>
+                    <button class="btn-primary" id="addPatientBtn">
+                        <i class="fas fa-plus"></i> Add Patient
+                    </button>
+                </div>
+                
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchPatient" placeholder="Search patients by name or ID...">
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patientsTableBody">
+                            <tr><td colspan="5">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- New Analysis Page -->
+            <div id="new-analysis-page" class="page">
+                <div class="page-header">
+                    <h1>New Analysis</h1>
+                    <p>Enter patient details and upload X-ray image</p>
+                </div>
+                
+                <div class="analysis-container">
+                    <div class="patient-form">
+                        <h3>Patient Information</h3>
+                        <div class="form-group">
+                            <label>Select Patient</label>
+                            <select id="patientSelect">
+                                <option value="">-- Select existing patient --</option>
+                            </select>
+                        </div>
+                        <div class="form-divider">OR</div>
+                        <div class="form-group">
+                            <label>Patient ID</label>
+                            <input type="text" id="newPatientId" placeholder="e.g., P-001">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" id="newPatientName" placeholder="Patient name">
+                            </div>
+                            <div class="form-group">
+                                <label>Age</label>
+                                <input type="number" id="newPatientAge" placeholder="Age">
+                            </div>
+                            <div class="form-group">
+                                <label>Gender</label>
+                                <select id="newPatientGender">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Number</label>
+                            <input type="text" id="newPatientContact" placeholder="Phone number">
+                        </div>
+                    </div>
+                    
+                    <div class="upload-section">
+                        <h3>X-Ray Upload</h3>
+                        <div class="drop-zone" id="dropZone">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drag & drop X-ray image here</p>
+                            <p class="small">or click to browse</p>
+                            <input type="file" id="xrayInput" accept="image/*" hidden>
+                        </div>
+                        <div class="preview-area" id="previewArea" style="display: none;">
+                            <img id="previewImage" alt="X-ray preview">
+                            <button class="remove-btn" id="removePreviewBtn"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="form-group">
+                            <label>Clinical Notes</label>
+                            <textarea id="analysisNotes" rows="3" placeholder="Add any clinical notes..."></textarea>
+                        </div>
+                        <button class="analyze-btn" id="analyzeBtn" disabled>
+                            <i class="fas fa-microscope"></i> Analyze X-Ray
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="result-section" id="resultSection" style="display: none;">
+                    <h3>Analysis Result</h3>
+                    <div class="result-card" id="resultCard">
+                        <div class="result-icon" id="resultIcon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="result-details">
+                            <span class="result-label">Diagnosis</span>
+                            <span class="result-value" id="resultValue">Normal</span>
+                        </div>
+                        <div class="confidence-meter">
+                            <span>Confidence</span>
+                            <div class="meter-bar">
+                                <div class="meter-fill" id="confidenceFill"></div>
+                            </div>
+                            <span id="confidencePercent">0%</span>
+                        </div>
+                        <button class="save-result-btn" id="saveResultBtn">Save Result</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Page -->
+            <div id="history-page" class="page">
+                <div class="page-header">
+                    <h1>Analysis History</h1>
+                    <div class="filter-group">
+                        <input type="date" id="startDate">
+                        <input type="date" id="endDate">
+                        <button class="btn-secondary" id="filterBtn">Filter</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Patient</th>
+                                <th>Result</th>
+                                <th>Confidence</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr><td colspan="5">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Reports Page -->
+            <div id="reports-page" class="page">
+                <div class="page-header">
+                    <h1>Reports</h1>
+                </div>
+                
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <i class="fas fa-user"></i>
+                        <h3>Patient Report</h3>
+                        <p>Generate detailed report for a specific patient</p>
+                        <select id="reportPatientSelect">
+                            <option value="">Select Patient</option>
+                        </select>
+                        <button class="btn-primary" id="generatePatientReport">Generate PDF</button>
+                    </div>
+                    
+                    <div class="report-card">
+                        <i class="fas fa-chart-bar"></i>
+                        <h3>Doctor Summary</h3>
+                        <p>Get your monthly/weekly analysis summary</p>
+                        <select id="reportPeriod">
+                            <option value="weekly">Weekly Summary</option>
+                            <option value="monthly">Monthly Summary</option>
+                            <option value="all">All Time</option>
+                        </select>
+                        <button class="btn-primary" id="generateDoctorReport">Generate PDF</button>
+                    </div>
+                    
+                    <div class="report-card">
+                        <i class="fas fa-download"></i>
+                        <h3>Export Data</h3>
+                        <p>Export your analysis data to CSV</p>
+                        <button class="btn-primary" id="exportCSVBtn">Export CSV</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Patient Modal -->
+    <div class="modal" id="addPatientModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Patient</h2>
+                <button class="close-modal" onclick="closePatientModal()">&times;</button>
+            </div>
+            <form id="addPatientForm">
+                <div class="form-group">
+                    <label>Patient ID</label>
+                    <input type="text" id="modalPatientId" required>
+                </div>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="modalPatientName" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" id="modalPatientAge" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select id="modalPatientGender">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Contact</label>
+                    <input type="text" id="modalPatientContact">
+                </div>
+                <button type="submit" class="btn-primary">Add Patient</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="doctor_dashboard.js"></script>
+</body>
+</html>

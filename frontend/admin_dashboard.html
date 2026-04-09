@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - PneumoDetect AI</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-lungs"></i>
+                    <span>Pneumo<span>Detect</span></span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="users">
+                    <i class="fas fa-users"></i>
+                    <span>Manage Users</span>
+                </a>
+                <a href="#" class="nav-item" data-page="all-patients">
+                    <i class="fas fa-procedures"></i>
+                    <span>All Patients</span>
+                </a>
+                <a href="#" class="nav-item" data-page="all-analyses">
+                    <i class="fas fa-chart-line"></i>
+                    <span>All Analyses</span>
+                </a>
+                <a href="#" class="nav-item" data-page="reports">
+                    <i class="fas fa-file-alt"></i>
+                    <span>System Reports</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">A</div>
+                    <div class="user-details">
+                        <span class="user-name" id="userName">Admin</span>
+                        <span class="user-role">Administrator</span>
+                    </div>
+                </div>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="page active">
+                <div class="page-header">
+                    <h1>Admin Dashboard</h1>
+                    <p>System Overview</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-user-md"></i></div>
+                        <div class="stat-info">
+                            <h3 id="totalDoctors">0</h3>
+                            <p>Total Doctors</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <h3 id="totalPatients">0</h3>
+                            <p>Total Patients</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="stat-info">
+                            <h3 id="totalAnalyses">0</h3>
+                            <p>Total Analyses</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="stat-info">
+                            <h3 id="pneumoniaCases">0</h3>
+                            <p>Pneumonia Cases</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-card">
+                        <h3>Monthly Activity</h3>
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Doctor Performance</h3>
+                        <canvas id="doctorChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Page -->
+            <div id="users-page" class="page">
+                <div class="page-header">
+                    <h1>Manage Users</h1>
+                    <button class="btn-primary" id="addUserBtn">
+                        <i class="fas fa-plus"></i> Add User
+                    </button>
+                </div>
+                
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchUser" placeholder="Search users...">
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr><td colspan="6">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- All Patients Page -->
+            <div id="all-patients-page" class="page">
+                <div class="page-header">
+                    <h1>All Patients</h1>
+                </div>
+                
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchAllPatient" placeholder="Search patients...">
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Gender</th>
+                                <th>Doctor</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allPatientsTableBody">
+                            <tr><td colspan="6">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- All Analyses Page -->
+            <div id="all-analyses-page" class="page">
+                <div class="page-header">
+                    <h1>All Analyses</h1>
+                    <div class="filter-group">
+                        <input type="date" id="adminStartDate">
+                        <input type="date" id="adminEndDate">
+                        <button class="btn-secondary" id="adminFilterBtn">Filter</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Patient</th>
+                                <th>Doctor</th>
+                                <th>Result</th>
+                                <th>Confidence</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allAnalysesTableBody">
+                            <tr><td colspan="5">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Reports Page -->
+            <div id="reports-page" class="page">
+                <div class="page-header">
+                    <h1>System Reports</h1>
+                </div>
+                
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>System Summary Report</h3>
+                        <p>Complete system analytics and statistics</p>
+                        <button class="btn-primary" id="adminSummaryReport">Generate Report</button>
+                    </div>
+                    
+                    <div class="report-card">
+                        <i class="fas fa-database"></i>
+                        <h3>Export All Data</h3>
+                        <p>Export complete system data to CSV</p>
+                        <button class="btn-primary" id="exportAllDataBtn">Export CSV</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div class="modal" id="userModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="userModalTitle">Add User</h2>
+                <button class="close-modal" onclick="closeUserModal()">&times;</button>
+            </div>
+            <form id="userForm">
+                <input type="hidden" id="editUserId">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="userUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="userEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="userFullName">
+                </div>
+                <div class="form-group">
+                    <label>Hospital</label>
+                    <input type="text" id="userHospital">
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="userRole">
+                        <option value="doctor">Doctor</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group" id="passwordField">
+                    <label>Password</label>
+                    <input type="password" id="userPassword">
+                </div>
+                <button type="submit" class="btn-primary">Save User</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin_dashboard.js"></script>
+</body>
+</html>
