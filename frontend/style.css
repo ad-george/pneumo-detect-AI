@@ -1757,6 +1757,16 @@ body {
 .login-footer a:hover {
     text-decoration: underline;
 }
+
+/* Invalid Result Style */
+.result-card.invalid {
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05));
+}
+
+.result-card.invalid .result-icon i {
+    color: #f59e0b;
+}
     
     .hero-stats {
         justify-content: center;

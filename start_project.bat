@@ -12,7 +12,7 @@ echo [2/2] Starting Frontend Server...
 start "PneumoDetect Frontend" cmd /k "cd /d C:\Users\PC\Desktop\PNEUMONIA DETECTION\frontend && py -m http.server 8000" 
 timeout /t 2 /nobreak > nul 
 echo Opening browser... 
-start http://localhost:8000/login.html 
+start http://localhost:8000/ 
 echo. 
 echo ======================================== 
 echo    System Started Successfully! 

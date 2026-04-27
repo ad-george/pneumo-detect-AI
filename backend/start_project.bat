@@ -21,7 +21,7 @@ timeout /t 2 /nobreak > nul
 
 REM Open Browser
 echo Opening browser...
-start http://localhost:8000/login.html
+start http://localhost:8000
 
 echo.
 echo ========================================

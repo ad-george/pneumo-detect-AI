@@ -7,6 +7,10 @@ import os
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 
+# Helper function for local time
+def get_local_time():
+    return datetime.now()
+
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
     
@@ -16,7 +20,7 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), default='doctor')
     is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=get_local_time)
     full_name = db.Column(db.String(150))
     hospital_name = db.Column(db.String(200))
     
@@ -39,7 +43,7 @@ class Patient(db.Model):
     gender = db.Column(db.String(10), nullable=False)
     contact = db.Column(db.String(20))
     doctor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=get_local_time)
     
     predictions = db.relationship('Prediction', backref='patient', lazy=True, cascade='all, delete-orphan')
 
@@ -53,7 +57,7 @@ class Prediction(db.Model):
     confidence = db.Column(db.Float, nullable=False)
     raw_prediction = db.Column(db.Float)
     analysis_time = db.Column(db.Float)
-    predicted_at = db.Column(db.DateTime, default=datetime.utcnow)
+    predicted_at = db.Column(db.DateTime, default=get_local_time)
     notes = db.Column(db.Text)
     doctor_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 

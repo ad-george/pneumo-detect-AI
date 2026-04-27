@@ -2,25 +2,31 @@ const API_URL = 'http://localhost:5000';
 let currentUser = null;
 let usersList = [];
 let patientsList = [];
+let predictionsList = [];
 
 async function checkAuth() {
     try {
-        const response = await fetch(`${API_URL}/api/current_user`, { credentials: 'include' });
+        const response = await fetch(`${API_URL}/api/current_user`, {
+            credentials: 'include'
+        });
+        
         if (response.ok) {
             currentUser = await response.json();
             if (currentUser.role !== 'admin') {
                 window.location.href = 'doctor_dashboard.html';
+                return;
             }
-            document.getElementById('userName').textContent = currentUser.full_name || currentUser.username;
-            document.getElementById('userAvatar').textContent = (currentUser.full_name || currentUser.username).charAt(0).toUpperCase();
-            loadDashboard();
-            loadUsers();
-            loadAllPatients();
-            loadAllAnalyses();
+            document.getElementById('userName').textContent = currentUser.full_name || currentUser.email;
+            document.getElementById('userAvatar').textContent = (currentUser.full_name || currentUser.email).charAt(0).toUpperCase();
+            await loadDashboard();
+            await loadUsers();
+            await loadAllPatients();
+            await loadAllAnalyses();
         } else {
             window.location.href = 'login.html';
         }
     } catch (error) {
+        console.error('Auth error:', error);
         window.location.href = 'login.html';
     }
 }
@@ -62,22 +68,47 @@ async function loadDashboard() {
                     label: 'Analyses',
                     data: [12, 19, 15, 17, 14, 23],
                     borderColor: '#4f46e5',
-                    tension: 0.4
+                    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                    tension: 0.4,
+                    fill: true
                 }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { labels: { color: 'white' } }
+                }
             }
         });
         
         // Doctor chart
+        const doctorResponse = await fetch(`${API_URL}/api/admin/users`, { credentials: 'include' });
+        const users = await doctorResponse.json();
+        const doctors = users.filter(u => u.role === 'doctor');
+        const doctorNames = doctors.map(d => d.full_name || d.username);
+        const doctorAnalyses = await Promise.all(doctors.map(async (d) => {
+            const predResponse = await fetch(`${API_URL}/api/predictions`, { credentials: 'include' });
+            const preds = await predResponse.json();
+            return preds.filter(p => p.doctor_name === (d.full_name || d.username)).length;
+        }));
+        
         const doctorCtx = document.getElementById('doctorChart').getContext('2d');
         new Chart(doctorCtx, {
             type: 'bar',
             data: {
-                labels: ['Dr. Smith', 'Dr. Jones', 'Dr. Wilson'],
+                labels: doctorNames.slice(0, 5),
                 datasets: [{
                     label: 'Analyses',
-                    data: [45, 38, 52],
-                    backgroundColor: '#4f46e5'
+                    data: doctorAnalyses.slice(0, 5),
+                    backgroundColor: '#4f46e5',
+                    borderRadius: 8
                 }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { labels: { color: 'white' } }
+                }
             }
         });
     } catch (error) {
@@ -113,9 +144,9 @@ function renderUsersTable(users) {
             <td>
                 <button class="action-btn" onclick="editUser(${u.id})"><i class="fas fa-edit"></i></button>
                 <button class="action-btn" onclick="toggleUserStatus(${u.id}, ${!u.is_active})"><i class="fas ${u.is_active ? 'fa-ban' : 'fa-check'}"></i></button>
-                <button class="action-btn delete" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>
-            </td>
-        </tr>
+                ${u.role !== 'admin' ? `<button class="action-btn delete" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>` : ''}
+             </td>
+         </tr>
     `).join('');
 }
 
@@ -136,7 +167,7 @@ document.getElementById('addUserBtn')?.addEventListener('click', () => {
     document.getElementById('userModal').style.display = 'flex';
 });
 
-async function editUser(userId) {
+window.editUser = async function(userId) {
     const user = usersList.find(u => u.id === userId);
     if (user) {
         document.getElementById('userModalTitle').textContent = 'Edit User';
@@ -149,9 +180,9 @@ async function editUser(userId) {
         document.getElementById('passwordField').style.display = 'none';
         document.getElementById('userModal').style.display = 'flex';
     }
-}
+};
 
-async function toggleUserStatus(userId, newStatus) {
+window.toggleUserStatus = async function(userId, newStatus) {
     try {
         await fetch(`${API_URL}/api/admin/users/${userId}`, {
             method: 'PUT',
@@ -160,24 +191,26 @@ async function toggleUserStatus(userId, newStatus) {
             body: JSON.stringify({ is_active: newStatus })
         });
         loadUsers();
+        showNotification(`User ${newStatus ? 'activated' : 'deactivated'}`, 'success');
     } catch (error) {
         alert('Error updating user status');
     }
-}
+};
 
-async function deleteUser(userId) {
-    if (confirm('Are you sure you want to delete this user?')) {
+window.deleteUser = async function(userId) {
+    if (confirm('Are you sure you want to delete this user? All their data will be lost.')) {
         try {
             await fetch(`${API_URL}/api/admin/users/${userId}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
             loadUsers();
+            showNotification('User deleted successfully', 'success');
         } catch (error) {
             alert('Error deleting user');
         }
     }
-}
+};
 
 document.getElementById('userForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -202,6 +235,7 @@ document.getElementById('userForm')?.addEventListener('submit', async (e) => {
             credentials: 'include',
             body: JSON.stringify(data)
         });
+        showNotification('User added successfully. Credentials sent to their email.', 'success');
     } else {
         await fetch(`${API_URL}/api/admin/users/${userId}`, {
             method: 'PUT',
@@ -209,6 +243,7 @@ document.getElementById('userForm')?.addEventListener('submit', async (e) => {
             credentials: 'include',
             body: JSON.stringify(data)
         });
+        showNotification('User updated successfully', 'success');
     }
     
     closeUserModal();
@@ -246,8 +281,8 @@ function renderAllPatientsTable(patients) {
             <td>${p.doctor_name || 'Unknown'}</td>
             <td>
                 <button class="action-btn" onclick="viewPatientDetails(${p.id})"><i class="fas fa-eye"></i></button>
-            </td>
-        </tr>
+             </td>
+         </tr>
     `).join('');
 }
 
@@ -260,37 +295,40 @@ document.getElementById('searchAllPatient')?.addEventListener('input', (e) => {
     renderAllPatientsTable(filtered);
 });
 
-function viewPatientDetails(patientId) {
+window.viewPatientDetails = function(patientId) {
     const patient = patientsList.find(p => p.id === patientId);
     if (patient) {
         alert(`Patient: ${patient.name}\nID: ${patient.patient_id}\nAge: ${patient.age}\nGender: ${patient.gender}\nDoctor: ${patient.doctor_name}\nCreated: ${new Date(patient.created_at).toLocaleDateString()}`);
     }
-}
+};
 
 // All Analyses
 async function loadAllAnalyses() {
     try {
         const response = await fetch(`${API_URL}/api/predictions`, { credentials: 'include' });
-        const analyses = await response.json();
-        const tbody = document.getElementById('allAnalysesTableBody');
-        
-        if (analyses.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5">No analyses found</td></tr>';
-            return;
-        }
-        
-        tbody.innerHTML = analyses.map(a => `
-            <tr>
-                <td>${new Date(a.predicted_at).toLocaleString()}</td>
-                <td>${a.patient_name} (${a.patient_id})</td>
-                <td>${a.doctor_name}</td>
-                <td><span class="badge ${a.result === 'Pneumonia' ? 'badge-danger' : 'badge-success'}">${a.result}</span></td>
-                <td>${a.confidence}%</td>
-            </tr>
-        `).join('');
+        predictionsList = await response.json();
+        renderAllAnalysesTable(predictionsList);
     } catch (error) {
         console.error('Error loading analyses:', error);
     }
+}
+
+function renderAllAnalysesTable(analyses) {
+    const tbody = document.getElementById('allAnalysesTableBody');
+    if (analyses.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5">No analyses found</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = analyses.map(a => `
+        <tr>
+            <td>${new Date(a.predicted_at).toLocaleString()}</td>
+            <td>${a.patient_name} (${a.patient_id})</td>
+            <td>${a.doctor_name}</td>
+            <td><span class="badge ${a.result === 'Pneumonia' ? 'badge-danger' : 'badge-success'}">${a.result}</span></td>
+            <td>${a.confidence}%</td>
+         </tr>
+    `).join('');
 }
 
 // Reports
@@ -299,26 +337,24 @@ document.getElementById('adminSummaryReport')?.addEventListener('click', () => {
 });
 
 document.getElementById('exportAllDataBtn')?.addEventListener('click', async () => {
-    const patients = await fetch(`${API_URL}/api/patients`, { credentials: 'include' }).then(r => r.json());
-    const analyses = await fetch(`${API_URL}/api/predictions`, { credentials: 'include' }).then(r => r.json());
-    
-    let csv = 'Patients\nPatient ID,Name,Age,Gender,Doctor\n';
-    patients.forEach(p => {
-        csv += `${p.patient_id},${p.name},${p.age},${p.gender},${p.doctor_name}\n`;
+    let csv = 'Patients\nPatient ID,Name,Age,Gender,Doctor,Created At\n';
+    patientsList.forEach(p => {
+        csv += `${p.patient_id},${p.name},${p.age},${p.gender},${p.doctor_name || 'Unknown'},${new Date(p.created_at).toLocaleDateString()}\n`;
     });
     
-    csv += '\nAnalyses\nDate,Patient,Doctor,Result,Confidence\n';
-    analyses.forEach(a => {
-        csv += `${new Date(a.predicted_at).toLocaleString()},${a.patient_name},${a.doctor_name},${a.result},${a.confidence}%\n`;
+    csv += '\nAnalyses\nDate,Patient,Doctor,Result,Confidence,Notes\n';
+    predictionsList.forEach(a => {
+        csv += `${new Date(a.predicted_at).toLocaleString()},${a.patient_name},${a.doctor_name},${a.result},${a.confidence}%,${a.notes || ''}\n`;
     });
     
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'system_export.csv';
+    a.download = `system_export_${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    showNotification('Export completed', 'success');
 });
 
 // Logout
@@ -326,6 +362,32 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
     await fetch(`${API_URL}/api/logout`, { method: 'POST', credentials: 'include' });
     window.location.href = 'login.html';
 });
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i> ${message}`;
+    notification.style.position = 'fixed';
+    notification.style.bottom = '20px';
+    notification.style.right = '20px';
+    notification.style.padding = '12px 20px';
+    notification.style.background = type === 'success' ? 'rgba(34,197,94,0.95)' : 'rgba(79,70,229,0.95)';
+    notification.style.color = 'white';
+    notification.style.borderRadius = '10px';
+    notification.style.zIndex = '3000';
+    notification.style.animation = 'slideInRight 0.3s ease';
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+}
+
+// Add animation style
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+`;
+document.head.appendChild(style);
 
 // Initialize
 checkAuth();

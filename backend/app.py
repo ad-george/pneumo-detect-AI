@@ -15,6 +15,11 @@ import tempfile
 import os
 from datetime import datetime
 
+# PNEUMOADMIN2024
+
+# Admin registration code (default admin sets this, can be changed)
+ADMIN_REGISTRATION_CODE = "PNEUMOADMIN2024"
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
@@ -42,6 +47,87 @@ login_manager.login_view = 'login_page'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+@app.route('/api/predictions/<int:prediction_id>', methods=['GET'])
+@login_required
+def get_prediction(prediction_id):
+    prediction = Prediction.query.get_or_404(prediction_id)
+    
+    if current_user.role != 'admin' and prediction.doctor_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    return jsonify({
+        'id': prediction.id,
+        'patient_name': prediction.patient.name,
+        'patient_id': prediction.patient.patient_id,
+        'patient_age': prediction.patient.age,
+        'patient_gender': prediction.patient.gender,
+        'result': prediction.result,
+        'confidence': prediction.confidence,
+        'predicted_at': prediction.predicted_at.isoformat(),
+        'doctor_name': prediction.doctor.full_name,
+        'notes': prediction.notes,
+        'analysis_time': prediction.analysis_time
+    })
+
+@app.route('/api/predictions/<int:prediction_id>/download', methods=['GET'])
+@login_required
+def download_prediction_report(prediction_id):
+    """Download prediction as PDF report"""
+    prediction = Prediction.query.get_or_404(prediction_id)
+    
+    if current_user.role != 'admin' and prediction.doctor_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    # Create PDF
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+    doc = SimpleDocTemplate(temp_file.name, pagesize=letter)
+    styles = getSampleStyleSheet()
+    
+    elements = []
+    
+    # Title
+    title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=24, textColor=colors.HexColor('#4f46e5'))
+    elements.append(Paragraph("PneumoDetect AI - Diagnostic Report", title_style))
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Patient Info
+    elements.append(Paragraph(f"<b>Patient Name:</b> {prediction.patient.name}", styles['Normal']))
+    elements.append(Paragraph(f"<b>Patient ID:</b> {prediction.patient.patient_id}", styles['Normal']))
+    elements.append(Paragraph(f"<b>Age:</b> {prediction.patient.age}", styles['Normal']))
+    elements.append(Paragraph(f"<b>Gender:</b> {prediction.patient.gender}", styles['Normal']))
+    elements.append(Spacer(1, 0.2*inch))
+    
+    # Diagnosis
+    elements.append(Paragraph("<b>Diagnosis Result</b>", styles['Heading2']))
+    diagnosis_color = colors.HexColor('#22c55e') if prediction.result == 'Normal' else colors.HexColor('#ef4444')
+    diag_style = ParagraphStyle('Diagnosis', parent=styles['Normal'], textColor=diagnosis_color, fontSize=16)
+    elements.append(Paragraph(f"<b>{prediction.result}</b>", diag_style))
+    elements.append(Spacer(1, 0.2*inch))
+    
+    # Confidence
+    elements.append(Paragraph(f"<b>Confidence Score:</b> {prediction.confidence}%", styles['Normal']))
+    elements.append(Paragraph(f"<b>Analysis Time:</b> {prediction.analysis_time:.2f} seconds", styles['Normal']))
+    elements.append(Paragraph(f"<b>Date:</b> {prediction.predicted_at.strftime('%Y-%m-%d %H:%M')}", styles['Normal']))
+    elements.append(Spacer(1, 0.2*inch))
+    
+    # Doctor Info
+    elements.append(Paragraph(f"<b>Analyzed By:</b> Dr. {prediction.doctor.full_name}", styles['Normal']))
+    elements.append(Paragraph(f"<b>Hospital:</b> {prediction.doctor.hospital_name or 'N/A'}", styles['Normal']))
+    elements.append(Spacer(1, 0.2*inch))
+    
+    # Notes
+    if prediction.notes:
+        elements.append(Paragraph("<b>Clinical Notes:</b>", styles['Heading2']))
+        elements.append(Paragraph(prediction.notes, styles['Normal']))
+    
+    elements.append(Spacer(1, 0.3*inch))
+    elements.append(Paragraph("<i>This is an AI-assisted diagnostic report. Please consult with a medical professional for final diagnosis.</i>", styles['Italic']))
+    
+    doc.build(elements)
+    temp_file.close()
+    
+    return send_file(temp_file.name, as_attachment=True, download_name=f'diagnosis_report_{prediction.patient.patient_id}_{prediction.predicted_at.strftime("%Y%m%d")}.pdf')
+
 # ==================== AUTHENTICATION ROUTES ====================
 
 @app.route('/api/register', methods=['POST'])
@@ -53,11 +139,20 @@ def register():
     password = data.get('password')
     hospital_name = data.get('hospital_name')
     role = data.get('role', 'doctor')
+    admin_code = data.get('admin_code', '')
     
+    # Check if trying to register as admin
+    if role == 'admin':
+        if admin_code != ADMIN_REGISTRATION_CODE:
+            return jsonify({'error': 'Invalid admin registration code'}), 403
+    
+    # Check if email already exists
     if User.query.filter_by(email=email).first():
         return jsonify({'error': 'Email already registered'}), 400
     
+    # Create username from email (before @)
     username = email.split('@')[0]
+    # Make sure username is unique
     if User.query.filter_by(username=username).first():
         username = f"{username}_{User.query.count() + 1}"
     
@@ -75,7 +170,19 @@ def register():
     db.session.add(user)
     db.session.commit()
     
-    return jsonify({'message': 'Registration successful', 'user_id': user.id})
+    # Generate welcome message
+    if role == 'doctor':
+        return jsonify({
+            'message': 'Registration successful! You can now login.',
+            'user_id': user.id,
+            'role': 'doctor'
+        })
+    else:
+        return jsonify({
+            'message': 'Admin registration successful!',
+            'user_id': user.id,
+            'role': 'admin'
+        })
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -97,6 +204,30 @@ def login():
         })
     
     return jsonify({'error': 'Invalid email or password'}), 401
+
+@app.route('/api/admin/get_code', methods=['GET'])
+@login_required
+def get_admin_code():
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Admin access required'}), 403
+    return jsonify({'admin_code': ADMIN_REGISTRATION_CODE})
+
+@app.route('/api/admin/update_code', methods=['POST'])
+@login_required
+def update_admin_code():
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    data = request.json
+    new_code = data.get('admin_code')
+    
+    if not new_code or len(new_code) < 6:
+        return jsonify({'error': 'Code must be at least 6 characters'}), 400
+    
+    global ADMIN_REGISTRATION_CODE
+    ADMIN_REGISTRATION_CODE = new_code
+    
+    return jsonify({'message': 'Admin code updated successfully', 'admin_code': ADMIN_REGISTRATION_CODE})
 
 @app.route('/api/logout', methods=['POST'])
 @login_required
@@ -264,12 +395,15 @@ def predict():
         result = detector.predict(processed_image)
         analysis_time = (datetime.now() - start_time).total_seconds()
         
+        # FIX: Handle both 2-class and 3-class models
+        raw_pred_value = result.get('raw_prediction', result['confidence'] / 100)
+        
         prediction = Prediction(
             patient_id=patient.id,
             xray_image_path=temp_path,
             result=result['prediction'],
             confidence=result['confidence'],
-            raw_prediction=result['raw_prediction'],
+            raw_prediction=raw_pred_value,
             analysis_time=analysis_time,
             notes=request.form.get('notes', ''),
             doctor_id=current_user.id
@@ -285,7 +419,11 @@ def predict():
         return jsonify(result)
     
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+    
+
 
 @app.route('/api/predictions', methods=['GET'])
 @login_required
@@ -305,6 +443,22 @@ def get_predictions():
         'doctor_name': p.doctor.full_name if p.doctor else 'Unknown',
         'notes': p.notes
     } for p in predictions])
+
+@app.route('/api/predictions/<int:prediction_id>', methods=['DELETE'])
+@login_required
+def delete_prediction(prediction_id):
+    """Delete a single prediction record"""
+    prediction = Prediction.query.get_or_404(prediction_id)
+    
+    # Check permission (admin or the doctor who created it)
+    if current_user.role != 'admin' and prediction.doctor_id != current_user.id:
+        return jsonify({'error': 'Access denied'}), 403
+    
+    # Delete the prediction
+    db.session.delete(prediction)
+    db.session.commit()
+    
+    return jsonify({'message': 'Prediction deleted successfully'})
 
 @app.route('/api/stats', methods=['GET'])
 @login_required

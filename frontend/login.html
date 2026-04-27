@@ -13,13 +13,14 @@
             box-sizing: border-box;
         }
 
+        
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
-        /* Animated Background */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -59,7 +60,6 @@
             50% { transform: translate(50px, 50px) scale(1.1); }
         }
 
-        /* Login Container */
         .login-container {
             position: relative;
             z-index: 1;
@@ -70,14 +70,13 @@
             padding: 20px;
         }
 
-        /* Login Card - Reduced Padding */
         .login-card {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(20px);
             border-radius: 28px;
             padding: 32px;
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
             animation: fadeInUp 0.6s ease;
@@ -88,7 +87,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Header - Reduced Margin */
         .login-header {
             text-align: center;
             margin-bottom: 28px;
@@ -127,7 +125,6 @@
             font-size: 13px;
         }
 
-        /* Input Groups */
         .input-group {
             position: relative;
             margin-bottom: 16px;
@@ -142,7 +139,7 @@
             font-size: 14px;
         }
 
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%;
             padding: 12px 14px 12px 42px;
             background: rgba(255, 255, 255, 0.1);
@@ -153,7 +150,11 @@
             font-family: inherit;
         }
 
-        .input-group input:focus {
+        .input-group select option {
+            background: #1a1a2e;
+        }
+
+        .input-group input:focus, .input-group select:focus {
             outline: none;
             border-color: #667eea;
             background: rgba(255, 255, 255, 0.15);
@@ -163,7 +164,6 @@
             color: rgba(255, 255, 255, 0.5);
         }
 
-        /* Login Button */
         .login-btn {
             width: 100%;
             padding: 12px;
@@ -184,7 +184,6 @@
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
 
-        /* Footer */
         .login-footer {
             text-align: center;
             margin-top: 20px;
@@ -202,7 +201,6 @@
             text-decoration: underline;
         }
 
-        /* Error Message */
         .error-message {
             background: rgba(239, 68, 68, 0.2);
             border: 1px solid rgba(239, 68, 68, 0.5);
@@ -214,7 +212,17 @@
             text-align: center;
         }
 
-        /* Modal */
+        .success-message {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 16px;
+            color: #4ade80;
+            font-size: 13px;
+            text-align: center;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -268,12 +276,85 @@
             color: white;
         }
 
-        /* Form Row for Register */
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-bottom: 0;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.05);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .toggle-label {
+            color: white;
+            font-size: 14px;
+        }
+
+        .toggle-label i {
+            margin-right: 8px;
+            color: #ffd700;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255,255,255,0.2);
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .admin-code-field {
+            display: none;
+            margin-bottom: 16px;
+        }
+
+        .admin-code-field.show {
+            display: block;
         }
 
         @media (max-width: 480px) {
@@ -307,6 +388,7 @@
             </div>
             
             <div id="errorDisplay" class="error-message" style="display: none;"></div>
+            <div id="successDisplay" class="success-message" style="display: none;"></div>
             
             <form id="loginForm">
                 <div class="input-group">
@@ -360,6 +442,26 @@
                     <i class="fas fa-check-circle"></i>
                     <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
                 </div>
+                
+                <!-- Admin Toggle Switch -->
+                <div class="toggle-switch">
+                    <span class="toggle-label">
+                        <i class="fas fa-shield-alt"></i> Register as Admin
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" id="adminToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- Admin Code Field (hidden by default) -->
+                <div class="admin-code-field" id="adminCodeField">
+                    <div class="input-group">
+                        <i class="fas fa-key"></i>
+                        <input type="text" id="adminCode" placeholder="Admin Registration Code">
+                    </div>
+                </div>
+                
                 <button type="submit" class="login-btn">Create Account</button>
             </form>
         </div>
@@ -367,6 +469,18 @@
 
     <script>
         const API_URL = 'http://localhost:5000';
+        
+        // Admin toggle functionality
+        const adminToggle = document.getElementById('adminToggle');
+        const adminCodeField = document.getElementById('adminCodeField');
+        
+        adminToggle.addEventListener('change', function() {
+            if (this.checked) {
+                adminCodeField.classList.add('show');
+            } else {
+                adminCodeField.classList.remove('show');
+            }
+        });
         
         async function testBackendConnection() {
             try {
@@ -436,14 +550,23 @@
                 return;
             }
             
+            const isAdmin = document.getElementById('adminToggle').checked;
             const data = {
                 first_name: document.getElementById('firstName').value,
                 last_name: document.getElementById('lastName').value,
                 email: document.getElementById('regEmail').value,
                 password: password,
                 hospital_name: document.getElementById('hospitalName').value,
-                role: 'doctor'
+                role: isAdmin ? 'admin' : 'doctor'
             };
+            
+            if (isAdmin) {
+                data.admin_code = document.getElementById('adminCode').value;
+                if (!data.admin_code) {
+                    alert('Admin registration code is required');
+                    return;
+                }
+            }
             
             try {
                 const response = await fetch(`${API_URL}/api/register`, {
@@ -455,9 +578,13 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    alert('Registration successful! Please login.');
-                    closeRegister();
-                    document.getElementById('email').value = data.email;
+                    document.getElementById('successDisplay').style.display = 'block';
+                    document.getElementById('successDisplay').innerHTML = 'Registration successful! Please login.';
+                    setTimeout(() => {
+                        closeRegister();
+                        document.getElementById('email').value = data.email;
+                        document.getElementById('successDisplay').style.display = 'none';
+                    }, 2000);
                 } else {
                     alert(result.error || 'Registration failed');
                 }
@@ -468,6 +595,9 @@
         
         function showRegister() {
             document.getElementById('registerModal').style.display = 'flex';
+            document.getElementById('adminToggle').checked = false;
+            document.getElementById('adminCodeField').classList.remove('show');
+            document.getElementById('adminCode').value = '';
         }
         
         function closeRegister() {
@@ -479,5 +609,18 @@
             if (event.target === modal) closeRegister();
         };
     </script>
+
+    <script>
+    // Check if URL has register=true parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('register') === 'true') {
+        // Auto-open register modal after page loads
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                showRegister();
+            }, 500);
+        });
+    }
+</script>
 </body>
 </html>
